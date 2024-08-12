@@ -1,4 +1,5 @@
 import DescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/DescriptionForm";
+import ImageForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/ImageForm";
 import TitleForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/TitleForm";
 import { IconBadge } from "@/components/icon-badge";
 import { db } from "@/lib/db";
@@ -49,6 +50,7 @@ const page = async ({ params }: { params: { courseId: string } }) => {
           </div>
           <TitleForm initialData={course} courseId={params.courseId} />
           <DescriptionForm initialData={course} courseId={params.courseId} />
+          <ImageForm initialData={course} courseId={params.courseId} />
         </div>
       </div>
     </div>
