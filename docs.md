@@ -79,3 +79,49 @@ model Category {
 
 xong thì chạy 2 câu lệnh
 `npx prisma generate` và `npx prisma db push` là ok
+
+# tạo nhanh category
+
+tạo file script/seed.ts
+
+```ts
+const { PrismaClient } = require("@prisma/client");
+const database = new PrismaClient();
+async function main() {
+  try {
+    await database.category.createMany({
+      data: [
+        {
+          name: "Computer Science",
+        },
+        {
+          name: "Music",
+        },
+        {
+          name: "Fitness",
+        },
+        {
+          name: "Photography",
+        },
+        {
+          name: "Accounting",
+        },
+        {
+          name: "Engineering",
+        },
+        {
+          name: "Filming",
+        },
+      ],
+    });
+    console.log("success");
+  } catch (error) {
+    console.log("Error seeding the db categories", error);
+  } finally {
+    await database.$disconnect();
+  }
+}
+main();
+```
+
+sau đó lên terminal chạy node scripts/seed.ts là ok
