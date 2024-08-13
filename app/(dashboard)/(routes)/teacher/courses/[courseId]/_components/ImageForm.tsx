@@ -54,13 +54,12 @@ const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
           )}
         </Button>
       </div>
-      {!isEditing && !initialData.imageUrl && (
-        <div className="flex items-center justify-center h-60 bg-slate-200 rounded-md">
-          <ImageIcon className="h-10 w-10 text-slate-500" />
-        </div>
-      )}
-      {isEditing ||
-        (initialData.imageUrl && (
+      {!isEditing &&
+        (!initialData.imageUrl ? (
+          <div className="flex items-center justify-center h-60 bg-slate-200 rounded-md">
+            <ImageIcon className="h-10 w-10 text-slate-500" />
+          </div>
+        ) : (
           <div className="relative aspect-video mt-2">
             <Image
               src={initialData.imageUrl || ""}
@@ -74,7 +73,7 @@ const ImageForm = ({ initialData, courseId }: ImageFormProps) => {
         <div>
           <FileUpload
             endPoint="courseImage"
-            onUpload={(url) => {
+            onChange={(url) => {
               if (url) {
                 onSubmit({ imageUrl: url });
               }
