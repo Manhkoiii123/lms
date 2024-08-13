@@ -1,11 +1,12 @@
 import CategoryForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/CategoryForm";
 import DescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/DescriptionForm";
 import ImageForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/ImageForm";
+import PriceForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/PriceForm";
 import TitleForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/TitleForm";
 import { IconBadge } from "@/components/icon-badge";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { LayoutDashboard } from "lucide-react";
+import { CircleDollarSign, LayoutDashboard, ListCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 const page = async ({ params }: { params: { courseId: string } }) => {
   const { userId } = auth();
@@ -65,6 +66,25 @@ const page = async ({ params }: { params: { courseId: string } }) => {
               value: c.id,
             }))}
           />
+        </div>
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge icon={ListCheck} />
+              <h2 className="text-lg font-medium">Course Chapter</h2>
+            </div>
+            <div>Todo chapter</div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <IconBadge icon={CircleDollarSign} />
+              <h2 className="text-lg font-medium">Sell your course</h2>
+            </div>
+            <PriceForm
+              initialData={course}
+              courseId={params.courseId}
+            />
+          </div>
         </div>
       </div>
     </div>
