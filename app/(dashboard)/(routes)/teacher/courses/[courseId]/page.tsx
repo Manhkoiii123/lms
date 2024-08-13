@@ -1,3 +1,4 @@
+import AttachmentForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/AttachmentForm";
 import CategoryForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/CategoryForm";
 import DescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/DescriptionForm";
 import ImageForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/ImageForm";
@@ -6,7 +7,12 @@ import TitleForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_co
 import { IconBadge } from "@/components/icon-badge";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { CircleDollarSign, LayoutDashboard, ListCheck } from "lucide-react";
+import {
+  CircleDollarSign,
+  File,
+  LayoutDashboard,
+  ListCheck,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 const page = async ({ params }: { params: { courseId: string } }) => {
   const { userId } = auth();
@@ -16,6 +22,13 @@ const page = async ({ params }: { params: { courseId: string } }) => {
   const course = await db.course.findUnique({
     where: {
       id: params.courseId,
+    },
+    include: {
+      attachments: {
+        orderBy: {
+          name: "desc",
+        },
+      },
     },
   });
 
@@ -80,10 +93,14 @@ const page = async ({ params }: { params: { courseId: string } }) => {
               <IconBadge icon={CircleDollarSign} />
               <h2 className="text-lg font-medium">Sell your course</h2>
             </div>
-            <PriceForm
-              initialData={course}
-              courseId={params.courseId}
-            />
+            <PriceForm initialData={course} courseId={params.courseId} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <IconBadge icon={File} />
+              <h2 className="text-lg font-medium">Resources & Attachment</h2>
+            </div>
+            <AttachmentForm initialData={course} courseId={params.courseId} />
           </div>
         </div>
       </div>
