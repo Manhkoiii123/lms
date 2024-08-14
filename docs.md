@@ -154,7 +154,9 @@ export const Editor = ({ value, onChange }: EditorProps) => {
   );
 };
 ```
+
 tạo thêm component preview nưa
+
 ```ts
 "use client";
 
@@ -177,4 +179,102 @@ export const Preview = ({ value }: PreviewProps) => {
     </div>
   );
 };
+```
+
+# mux
+
+https://dashboard.mux.com/organizations/7j51s0/environments/895cr3/video/assets
+
+vào setting => accestoken => gen token => chọn muxvideo => ấn gen
+=> ra 2 cái env
+
+```ts
+MUX_TOKEN_ID=f11a3578-3567-4d10-a614-e2cb7c9ac7cd
+MUX_TOKEN_SECRET=t0GQPBhkVKht8qrPGZt1wOhC1AgMfTNvCF1PdvGE0hi9oJtnSSEPM+GorvbL1ciMEhGd5BB54AXs
+```
+
+chọn vào (video => asestt)
+https://dashboard.mux.com/organizations/7j51s0/environments/895cr3/video/assets
+install
+npm i @mux/mux-node @mux/mux-player-react
+vào cái api này api/[chapertId]/route.ts
+
+```ts
+import { db } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import Mux from "@mux/mux-node";
+
+const mux = new Mux({
+  tokenId: process.env.MUX_TOKEN_ID,
+  tokenSecret: process.env.MUX_TOKEN_SECRET,
+});
+export async function PATCH(
+  req: Request,
+  { params }: { params: { courseId: string; chapterId: string } }
+) {
+  try {
+    const { userId } = auth();
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    const { courseId, chapterId } = params;
+    const { isPublished, ...values } = await req.json();
+    const ownerCourse = await db.course.findUnique({
+      where: {
+        id: courseId,
+        userId,
+      },
+    });
+
+    if (!ownerCourse) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const chapter = await db.chapter.update({
+      where: {
+        id: chapterId,
+        courseId: courseId,
+      },
+      data: {
+        ...values,
+      },
+    });
+
+    if (values.videoUrl) {
+      const existingMuxData = await db.muxData.findFirst({
+        where: {
+          chapterId: chapterId,
+        },
+      });
+
+      if (existingMuxData) {
+        await mux.video.assets.delete(existingMuxData.assetId);
+        await db.muxData.delete({
+          where: {
+            id: existingMuxData.id,
+          },
+        });
+      }
+
+      const asset = await mux.video.assets.create({
+        input: [{ url: values.videoUrl }],
+        playback_policy: ["public"],
+        encoding_tier: "baseline",
+      });
+      await db.muxData.create({
+        data: {
+          assetId: asset.id,
+          chapterId: chapterId,
+          playbackId: asset.playback_ids?.[0]?.id,
+        },
+      });
+    }
+
+    return NextResponse.json(chapter);
+  } catch (error) {
+    console.log("🚀 ~ error:", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
 ```
