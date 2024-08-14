@@ -1,5 +1,6 @@
 import AttachmentForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/AttachmentForm";
 import CategoryForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/CategoryForm";
+import ChaptersForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/ChaptersForm";
 import DescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/DescriptionForm";
 import ImageForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/ImageForm";
 import PriceForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/PriceForm";
@@ -22,8 +23,14 @@ const page = async ({ params }: { params: { courseId: string } }) => {
   const course = await db.course.findUnique({
     where: {
       id: params.courseId,
+      userId,
     },
     include: {
+      chapters: {
+        orderBy: {
+          position: "asc",
+        },
+      },
       attachments: {
         orderBy: {
           name: "desc",
@@ -46,6 +53,7 @@ const page = async ({ params }: { params: { courseId: string } }) => {
     course.imageUrl,
     course.price,
     course.categoryId,
+    course.chapters.some((c) => c.isPublished),
   ];
   const totalFields = requiredFields.length;
   const completedFields = requiredFields.filter(Boolean).length;
@@ -86,7 +94,7 @@ const page = async ({ params }: { params: { courseId: string } }) => {
               <IconBadge icon={ListCheck} />
               <h2 className="text-lg font-medium">Course Chapter</h2>
             </div>
-            <div>Todo chapter</div>
+            <ChaptersForm initialData={course} courseId={params.courseId} />
           </div>
           <div>
             <div className="flex items-center gap-2">
