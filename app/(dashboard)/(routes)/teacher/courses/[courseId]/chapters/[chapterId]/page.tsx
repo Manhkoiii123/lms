@@ -2,6 +2,7 @@ import TitleForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_co
 import ChapterAccessForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/ChapterAccessForm";
 import ChapterDescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/ChapterDescriptionForm";
 import ChapterTitleForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/ChapterTitleForm";
+import ChapterVideoForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/ChapterVideoForm";
 import { IconBadge } from "@/components/icon-badge";
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
@@ -90,6 +91,11 @@ const page = async ({
             <IconBadge icon={Video} />
             <h2 className="text-xl">Add a video</h2>
           </div>
+          <ChapterVideoForm
+            initialData={chapter}
+            courseId={params.courseId}
+            chapterId={params.chapterId}
+          />
         </div>
       </div>
     </div>
