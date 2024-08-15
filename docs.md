@@ -1,3 +1,7 @@
+làm trên khóa này
+
+http://localhost:3000/teacher/courses/clzumm41l0000v7ewros1gih2
+
 # Prisma & DB setup
 
 npm i -D prisma
