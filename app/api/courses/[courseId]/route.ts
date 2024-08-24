@@ -59,11 +59,12 @@ export async function DELETE(
     if (!course) {
       return new NextResponse("Not found", { status: 404 });
     }
-    for (const chapter of course.chapters) {
-      if (chapter.muxData?.assetId) {
-        await mux.video.assets.delete(chapter.muxData.assetId);
-      }
-    }
+
+    // for (const chapter of course.chapters) {
+    //   if (chapter.muxData?.assetId) {
+    //     await mux.video.assets.delete(chapter.muxData.assetId);
+    //   }
+    // }
     const deletedCourse = await db.course.delete({
       where: {
         id: courseId,
@@ -72,7 +73,7 @@ export async function DELETE(
 
     return NextResponse.json(deletedCourse);
   } catch (error) {
-    console.log("🚀 ~ PATCH ~ error:", error);
+    console.log("🚀 ~ delete ~ error:", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
