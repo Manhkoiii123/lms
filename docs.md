@@ -289,11 +289,11 @@ export async function PATCH(
 # Stripe Integration
 
 chọn vào cái new business (iucon store) => new acc
-nhìn ở dưới cạnh mấy cái ảnh stripe có cái for dev => 2 cái key lấy cái pulsih thôi
+nhìn ở dưới cạnh mấy cái ảnh stripe có cái for dev => 2 cái key lấy cái sercet thôi
 
 ```ts
 STRIPE_API_KEY =
-  pk_test_51PrHMyI7TsYwaUzhSYVWXmIzirYlBmjmhRCS9pjKaMzKahNbwd8Qo2gqtrdt4wtT3O7O5A0pteR9aXSdp5NohKXG00srvpwPzN;
+  sk_test_51PrHMyI7TsYwaUzhSYVWXmIzirYlBmjmhRCS9pjKaMzKahNbwd8Qo2gqtrdt4wtT3O7O5A0pteR9aXSdp5NohKXG00srvpwPzN;
 ```
 
 npm i stripe
@@ -386,8 +386,8 @@ export async function POST(
       customer: stripeCustomer.stripeCustomerId,
       line_items,
       mode: "payment",
-      success_url: `${process.env.APP_URL}/courses/${courseId}?success=1`,
-      cancel_url: `${process.env.APP_URL}/courses/${courseId}?canceled=1`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${courseId}?success=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${courseId}?canceled=1`,
       metadata: {
         courseId: course.id,
         userId: user.id,
@@ -403,3 +403,101 @@ export async function POST(
 ```
 
 sang docs => ấn sang developers => webhook => test in a local env => lamf theo huong dan
+
+cách làm lách luật =))
+
+chạy cái câu lệnh sau trên command promd
+`"D:\stripe_1.21.2_windows_x86_64\stripe.exe" login`
+
+sau đó nó sẽ có cái dòng `Your pairing code is: glad-extol-nobly-sweet`
+
+sau dó chạy bằng câu lệnh `"D:\stripe_1.21.2_windows_x86_64\stripe.exe"  listen --forward-to localhost:3000/api/webhook` => ra 1 cái secrete
+
+thêm vào env
+
+```ts
+STRIPE_WEBHOOK_SERCET =
+  whsec_da34dc5d86ff3d43d51042d5e0a134578a26e6777b0cf907cd3d3225d9dd4af9;
+```
+
+tạo api/webhook/route.ts
+
+```ts
+import { db } from "@/lib/db";
+import { stripe } from "@/lib/stripe";
+import { headers } from "next/headers";
+import Stripe from "stripe";
+export async function POST(req: Request) {
+  const body = await req.text();
+  const signature = headers().get("Stripe-Signature") as string;
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SERCET!
+    );
+  } catch (error) {
+    console.log("🚀 ~ POST ~ error:", error);
+    return new Response("Webhook Error", { status: 400 });
+  }
+  const session = event.data.object as Stripe.Checkout.Session;
+  const userId = session?.metadata?.userId;
+  const courseId = session?.metadata?.courseId;
+  if (event.type === "checkout.session.completed") {
+    if (!userId || !courseId) {
+      return new Response("Webhook Error: Missing metadata", { status: 404 });
+    }
+    await db.purchase.create({
+      data: {
+        courseId: courseId,
+        userId: userId,
+      },
+    });
+  } else {
+    return new Response("Webhook Error: Unhandled event type", { status: 200 });
+  }
+}
+```
+
+sử dụng bên cái nút bấm
+
+```ts
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/format";
+import axios from "axios";
+import { useState } from "react";
+import toast from "react-hot-toast";
+
+const CourseEnrollButton = ({
+  price,
+  courseId,
+}: {
+  price: number;
+  courseId: string;
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const onClick = async () => {
+    try {
+      setIsLoading(true);
+      const res = await axios.post(`/api/courses/${courseId}/checkout`);
+      window.location.assign(res.data.url);
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  return (
+    <Button onClick={onClick} className="w-full md:w-auto">
+      Enroll for {formatPrice(price)}
+    </Button>
+  );
+};
+
+export default CourseEnrollButton;
+```
+
+card fake 4242 4242 4242 4242 05/55/555

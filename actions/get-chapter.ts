@@ -38,13 +38,13 @@ export const getChapter = async ({
     let muxData = null;
     let attachments: Attachment[] = [];
     let nextChapter: Chapter | null = null;
-    // if (purchase) {
-    attachments = await db.attachment.findMany({
-      where: {
-        courseId,
-      },
-    });
-    // }
+    if (purchase) {
+      attachments = await db.attachment.findMany({
+        where: {
+          courseId,
+        },
+      });
+    }
     if (chapter.isFree || purchase) {
       muxData = await db.muxData.findUnique({
         where: {

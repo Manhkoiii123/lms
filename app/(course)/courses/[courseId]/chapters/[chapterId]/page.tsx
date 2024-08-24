@@ -35,7 +35,6 @@ const ChapterIdPage = async ({
     courseId: params.courseId,
     userId,
   });
-  console.log("🚀 ~ attachments:", attachments);
   if (!chapter || !course) {
     return redirect("/");
   }
