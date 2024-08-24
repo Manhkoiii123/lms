@@ -5,6 +5,7 @@ http://localhost:3000/teacher/courses/clzumm41l0000v7ewros1gih2
 # Prisma & DB setup
 
 npm i -D prisma
+
 npx prisma init
 
 tạo bảng trong schema.pri
@@ -200,7 +201,9 @@ MUX_TOKEN_SECRET=t0GQPBhkVKht8qrPGZt1wOhC1AgMfTNvCF1PdvGE0hi9oJtnSSEPM+GorvbL1ci
 chọn vào (video => asestt)
 https://dashboard.mux.com/organizations/7j51s0/environments/895cr3/video/assets
 install
+
 npm i @mux/mux-node @mux/mux-player-react
+
 vào cái api này api/[chapertId]/route.ts
 
 ```ts

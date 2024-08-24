@@ -19,6 +19,7 @@ const Actions = ({ disabled, courseId, isPublished }: ActionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const confetti = useConfettiStore();
   const onDelete = async () => {
+    // console.log("aaaaaa");
     try {
       setIsLoading(true);
       await axios.delete(`/api/courses/${courseId}`);
