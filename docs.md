@@ -285,3 +285,121 @@ export async function PATCH(
   }
 }
 ```
+
+# Stripe Integration
+
+chọn vào cái new business (iucon store) => new acc
+nhìn ở dưới cạnh mấy cái ảnh stripe có cái for dev => 2 cái key lấy cái pulsih thôi
+
+```ts
+STRIPE_API_KEY =
+  pk_test_51PrHMyI7TsYwaUzhSYVWXmIzirYlBmjmhRCS9pjKaMzKahNbwd8Qo2gqtrdt4wtT3O7O5A0pteR9aXSdp5NohKXG00srvpwPzN;
+```
+
+npm i stripe
+
+vào lib/stripe.ts
+
+```ts
+import Stripe from "stripe";
+export const stripe = new Stripe(process.env.STRIPE_API_KEY!, {
+  apiVersion: "2024-06-20",
+  typescript: true,
+});
+```
+
+tạo file course/[courseid]/checkout/route.ts
+
+```ts
+import { db } from "@/lib/db";
+import { stripe } from "@/lib/stripe";
+import { currentUser } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+
+export async function POST(
+  req: Request,
+  { params }: { params: { courseId: string } }
+) {
+  try {
+    const user = await currentUser();
+    if (!user || !user.id || !user.emailAddresses?.[0]?.emailAddress) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    const courseId = params.courseId;
+    const course = await db.course.findUnique({
+      where: {
+        id: courseId,
+        isPublished: true,
+      },
+    });
+    const purchase = await db.purchase.findUnique({
+      where: {
+        userId_courseId: {
+          userId: user.id,
+          courseId,
+        },
+      },
+    });
+    if (purchase) {
+      return new NextResponse("Already purchased", { status: 400 });
+    }
+    if (!course) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "USD",
+          product_data: {
+            name: course.title,
+            description: course.description!,
+          },
+          unit_amount: Math.round(course.price!) * 100,
+        },
+      },
+    ];
+    let stripeCustomer = await db.stripeCustomer.findUnique({
+      where: {
+        userId: user.id,
+      },
+      select: {
+        stripeCustomerId: true,
+      },
+    });
+
+    if (!stripeCustomer) {
+      const customer = await stripe.customers.create({
+        email: user.emailAddresses[0].emailAddress,
+      });
+      stripeCustomer = await db.stripeCustomer.create({
+        data: {
+          userId: user.id,
+          stripeCustomerId: customer.id,
+        },
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: stripeCustomer.stripeCustomerId,
+      line_items,
+      mode: "payment",
+      success_url: `${process.env.APP_URL}/courses/${courseId}?success=1`,
+      cancel_url: `${process.env.APP_URL}/courses/${courseId}?canceled=1`,
+      metadata: {
+        courseId: course.id,
+        userId: user.id,
+      },
+    });
+
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    console.log("🚀 ~ error:", error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
+}
+```
+
+sang docs => ấn sang developers => webhook => test in a local env => lamf theo huong dan

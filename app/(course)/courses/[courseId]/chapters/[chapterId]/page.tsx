@@ -1,7 +1,11 @@
 import { getChapter } from "@/actions/get-chapter";
+import CourseEnrollButton from "@/app/(course)/courses/[courseId]/chapters/[chapterId]/_components/CourseEnrollButton";
 import VideoPlayer from "@/app/(course)/courses/[courseId]/chapters/[chapterId]/_components/VideoPlayer";
 import Banner from "@/components/Banner";
+import { Preview } from "@/components/preview";
+import { Separator } from "@/components/ui/separator";
 import { auth } from "@clerk/nextjs/server";
+import { File } from "lucide-react";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -31,6 +35,7 @@ const ChapterIdPage = async ({
     courseId: params.courseId,
     userId,
   });
+  console.log("🚀 ~ attachments:", attachments);
   if (!chapter || !course) {
     return redirect("/");
   }
@@ -61,6 +66,41 @@ const ChapterIdPage = async ({
             isLocked={isLocked}
             completeOnEnd={completeOnEnd}
           />
+        </div>
+        <div>
+          <div className="p-4 flex flex-col md:flex-row items-center justify-between">
+            <h2 className="text-2xl font-semibold mb-2">{chapter.title}</h2>
+            {purchase ? (
+              <div></div>
+            ) : (
+              <CourseEnrollButton
+                courseId={params.courseId}
+                price={course.price!}
+              />
+            )}
+          </div>
+          <Separator />
+          <div>
+            <Preview value={chapter.description!} />
+          </div>
+          {!!attachments.length && (
+            <>
+              <Separator />
+              <div className="p-4">
+                {attachments.map((att) => (
+                  <a
+                    href={att.url}
+                    key={att.id}
+                    target="_blank"
+                    className="flex items-center p-3 w-full bg-sky-200 border text-sky-700 rounded-md hover:underline"
+                  >
+                    <File />
+                    <p className="line-clamp-1">{att.name}</p>
+                  </a>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
