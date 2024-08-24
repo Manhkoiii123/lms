@@ -24,7 +24,7 @@ const CourseSidebarItem = ({
   const Icon = isLocked ? Lock : isCompleted ? CheckCircle : PlayCircle;
   const isActive = pathname?.includes(id);
   const onClick = () => {
-    router.push(`courses/${courseId}/chapters/${id}`);
+    router.push(`/courses/${courseId}/chapters/${id}`);
   };
   return (
     <button
@@ -39,7 +39,7 @@ const CourseSidebarItem = ({
         isCompleted && isActive && "bg-emerald-200/20"
       )}
     >
-      <div className="flex items-center gap-x-2 py-4 ">
+      <div className="flex items-start gap-x-2 py-4 text-start">
         <Icon
           size={22}
           className={cn(
